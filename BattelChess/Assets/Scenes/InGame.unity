@@ -2675,6 +2675,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileMaterial: {fileID: 2100000, guid: e71f58acecbd50e4eb1ee3b5859895fb, type: 2}
+  prefabs:
+  - {fileID: 5169899332509114070, guid: cb6d288a261e98f46b329b4b1abfe3d4, type: 3}
+  - {fileID: 6676589474624102541, guid: 36fb1ee4cd571064fae4b0c7387040ea, type: 3}
+  - {fileID: 8369561832499932252, guid: bca49e99db841ea4180227df576c1bd9, type: 3}
+  - {fileID: 7749598103577923445, guid: 7b12ec5adcf9cc44e8fca3c94260bb67, type: 3}
+  - {fileID: 9085590293298610176, guid: 5728d2b4d4785d54cbdd771c009c0838, type: 3}
+  - {fileID: 8786407082611973923, guid: a8dc50c9279bcf141b0386e125238176, type: 3}
+  teamMaterials:
+  - {fileID: 2100000, guid: c59dae52943dfc44cb80ed1df7195a04, type: 2}
+  - {fileID: 2100000, guid: 39dfde4a0466a534ba0c1f318a26b538, type: 2}
 --- !u!4 &622135302
 Transform:
   m_ObjectHideFlags: 0
