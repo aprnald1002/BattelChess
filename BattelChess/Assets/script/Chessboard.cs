@@ -10,7 +10,7 @@ public class Chessboard : MonoBehaviour
 
     [Header("Prefabs & Materials")] 
     [SerializeField] private GameObject[] prefabs;
-    [SerializeField] private Material[] teamMaterials;
+    [SerializeField] private Material[] teamMaterials;  
     
     // LOGIC
     private ChessPiece[,] chessPieces;
@@ -27,6 +27,9 @@ public class Chessboard : MonoBehaviour
         SpawnAllPieces();
         PositionALlPieces();
     }
+    
+    
+    
     private void Update()
     {
         if (!currentCamera)
