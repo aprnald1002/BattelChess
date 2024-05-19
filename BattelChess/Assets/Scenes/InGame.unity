@@ -157,6 +157,7 @@ MonoBehaviour:
   boardCenter: {x: 0, y: 0, z: 0}
   deathSize: 0.005
   deathSpacing: 0.5
+  dragOffset: 0
   prefabs:
   - {fileID: 5169899332509114070, guid: cb6d288a261e98f46b329b4b1abfe3d4, type: 3}
   - {fileID: 6676589474624102541, guid: 36fb1ee4cd571064fae4b0c7387040ea, type: 3}

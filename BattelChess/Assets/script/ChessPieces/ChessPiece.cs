@@ -20,7 +20,7 @@ public class ChessPiece : MonoBehaviour
     public int currentX;
     public int currentY;
     public ChessPieceType type;
-
+    
     private Vector3 desiredPosition;
     private Vector3 desiredScale = new Vector3(0.02f, 0.02f, 0.02f);
 
@@ -28,6 +28,19 @@ public class ChessPiece : MonoBehaviour
     {
         transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
+    }
+
+    public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    {
+        List<Vector2Int> r = new List<Vector2Int>();
+        
+        r.Add(new Vector2Int(3, 3));
+        r.Add(new Vector2Int(3, 4));
+        r.Add(new Vector2Int(4, 3));
+        r.Add(new Vector2Int(4, 4));
+
+        return r;
+
     }
 
     public virtual void SetPosition(Vector3 position, bool force = false)
