@@ -19,6 +19,7 @@ public class ChessPiece : MonoBehaviour
     public int team;
     public int currentX;
     public int currentY;
+    public int killCount = 0;
     public ChessPieceType type;
     
     private Vector3 desiredPosition;
@@ -30,7 +31,7 @@ public class ChessPiece : MonoBehaviour
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
     }
 
-    public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY) 
     {
         List<Vector2Int> r = new List<Vector2Int>();
         
@@ -51,6 +52,7 @@ public class ChessPiece : MonoBehaviour
             transform.position = desiredPosition;
         }
     }
+
     public virtual void SetScale(Vector3 scale, bool force = false)
     {
         desiredScale = scale;

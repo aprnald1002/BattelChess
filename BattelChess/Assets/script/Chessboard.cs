@@ -5,10 +5,11 @@ using UnityEngine;
 
 public class Chessboard : MonoBehaviour
 {
+    public static Chessboard Instance = null;
+    
     [Header("Art stuff")] 
     [SerializeField] private Material tileMaterial;
     [SerializeField] private float tileSize = 1f;
-    [SerializeField] private Vector3 boardCenter = Vector3.zero;
     [SerializeField] private float deathSize;
     [SerializeField] private float deathSpacing;
     [SerializeField] private float dragOffset;
@@ -21,16 +22,29 @@ public class Chessboard : MonoBehaviour
     private ChessPiece[,] chessPieces;
     private ChessPiece currentlyDragging;
     private List<Vector2Int> availableMoves = new List<Vector2Int>();
+    private List<ChessPiece> whiteTeam = new List<ChessPiece>();
     private List<ChessPiece> deadWhites = new List<ChessPiece>();
+    private List<ChessPiece> blackTeam = new List<ChessPiece>();
     private List<ChessPiece> deadBlacks = new List<ChessPiece>();
     private const int TILE_COUNT_X = 8;
     private const int TILE_COUNT_Y = 8;
     private GameObject[,] tiles;
     private Camera currentCamera;
     private Vector2Int currentHover;
+    private bool isWhiteTurn = true;
+    public bool isMove = true;
         
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y);
 
         SpawnAllPieces();
@@ -65,17 +79,18 @@ public class Chessboard : MonoBehaviour
             }
 
             // If we press down on the mouse
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && isMove)
             {
                 if (chessPieces[hitPosition.x, hitPosition.y] != null)
                 {
                     // Is it our turn;
-                    if (true)
+                    if ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn) || (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn))
                     {
                         currentlyDragging = chessPieces[hitPosition.x, hitPosition.y];
                         
-                        // Get a list of where i can go, hightlight tiles as well
+                        // Get a list of where I can go, hightlight tiles as well
                         availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+                        
                         HighlightTiles();
                     }
                 }
@@ -207,6 +222,14 @@ public class Chessboard : MonoBehaviour
 
         cp.type = type;
         cp.team = team;
+
+        if (cp.team == 0) {
+            whiteTeam.Add(cp);
+        } else {
+            cp.GetComponent<Transform>().rotation = Quaternion.Euler(-90, 0, 90);
+            blackTeam.Add(cp);
+        }
+        
         cp.GetComponent<MeshRenderer>().material = teamMaterials[team];
         
         return cp;
@@ -250,7 +273,7 @@ public class Chessboard : MonoBehaviour
             tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Tile");
         }
 
-    availableMoves.Clear();
+        availableMoves.Clear();
     }
     
     // Operations
@@ -274,7 +297,6 @@ public class Chessboard : MonoBehaviour
         }
         
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
-
         
         // Is there another piece on the target position?
         if (chessPieces[x, y] != null)
@@ -290,21 +312,33 @@ public class Chessboard : MonoBehaviour
                 deadWhites.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize);
                 ocp.SetPosition(
-                    new Vector3(9 * tileSize, 0, tileSize * deathSpacing * deadWhites.Count));
+                    new Vector3((9 * tileSize + 1), 0, tileSize * deathSpacing * deadWhites.Count));
+                if (deadWhites.Count == whiteTeam.Count) {
+                    GameManager.Instance.GameEnd("Black");
+                }
             }
             else
             {
                 deadBlacks.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize);
                 ocp.SetPosition(
-                    new Vector3(-tileSize, 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
+                    new Vector3((-tileSize - 1), 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
+                if (deadBlacks.Count == blackTeam.Count) {
+                    GameManager.Instance.GameEnd("White");
+                }
             }
         }
+        
+        
         chessPieces[x, y] = cp;
         chessPieces[previousPosition.x, previousPosition.y] = null;
         
         PositionSinglePiece(x, y);
 
+        isWhiteTurn = !isWhiteTurn;
+        
+        CameraManager.Instance.StartCameraMove();
+        
         return true;
     }
     private Vector2Int LookupTileIndex(GameObject hitInfo)

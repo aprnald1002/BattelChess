@@ -12,10 +12,10 @@ public class CameraManager : MonoBehaviour
     public GameObject lookAt;
     
     [Range(0, 1)]
-    public float t;
+    [SerializeField] private float t;
 
-    public bool cameraFun; // 카메라 보기 수정 
-    public bool playerSeq; // true : 1플레이어, false : 2플레이어
+    private bool cameraFunction = true; // 카메라 보기 수정 
+    public bool playerTurn = true; // true : 1플레이어, false : 2플레이어
 
     private void Awake()
     {
@@ -25,48 +25,53 @@ public class CameraManager : MonoBehaviour
             Destroy(gameObject);
         }
         
-        t = 0;
-
-        playerSeq = false;
-        cameraFun = true;
+        UpdateCameraMove();
     }
 
-    private void Update()
+    private void UpdateCameraMove()
     {
-        
+        transform.position = Vector3.Slerp(cameraPoint[cameraFunction ? 0 : 2], cameraPoint[cameraFunction ? 1 : 3], t);
         transform.LookAt(lookAt.transform);
-        if (cameraFun)
-            transform.position = Vector3.Slerp(cameraPoint[0], cameraPoint[1], t);
-        else
-            transform.position = Vector3.Slerp(cameraPoint[2], cameraPoint[3], t);
-            
+    }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            StartCoroutine(CameraMove());
-        }
-        
+    public void ChangeCameraFunction()
+    {
+        cameraFunction = !cameraFunction;
+        UpdateCameraMove();
+    }
+
+    public void StartCameraMove()
+    {
+        Chessboard.Instance.isMove = false;
+        StartCoroutine(CameraMove());
     }
     
     private IEnumerator CameraMove()
     {
-        float targetT = playerSeq ? 1f : 0f;
-        float duration = cameraFun ? 3f : 1f; // 이동 시간 설정
+        float targetT = playerTurn ? 1f : 0f;
+        float duration = 1f;
 
         float elapsedTime = 0f; // 경과 시간
+        
+        
 
         while (elapsedTime < duration)
         {
-
+            
+            UpdateCameraMove();
+            
             yield return null;
 
             // 경과 시간 업데이트
             elapsedTime += Time.deltaTime;
 
             // t 값을 보간하여 부드럽게 이동
-            t = Mathf.Lerp(playerSeq ? 0f : 1f, targetT, elapsedTime / duration);
+            t = Mathf.Lerp(playerTurn ? 0f : 1f, targetT, elapsedTime / duration);
         }
-        playerSeq = !playerSeq;
+
+        UpdateCameraMove();
+        Chessboard.Instance.isMove = true;
+        playerTurn = !playerTurn;
         t = targetT;
     }
 }
