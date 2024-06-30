@@ -10,11 +10,14 @@ public class CameraManager : MonoBehaviour
     
     public List<Vector3> cameraPoint;
     public GameObject lookAt;
+
+    public Vector3 cameraSetUp;
     
     [Range(0, 1)]
     [SerializeField] private float t;
 
     private bool cameraFunction = true; // 카메라 보기 수정 
+    private bool isCameraFunction = false;
     public bool playerTurn = true; // true : 1플레이어, false : 2플레이어
 
     private void Awake()
@@ -28,9 +31,32 @@ public class CameraManager : MonoBehaviour
         UpdateCameraMove();
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            SetCamera();
+        }
+    }
+
+    private void SetCamera()
+    {
+        isCameraFunction = !isCameraFunction;
+        if (isCameraFunction)
+        {
+            transform.position = cameraSetUp;
+            transform.LookAt(lookAt.transform);
+        }
+        else
+        {
+            transform.position = cameraPoint[playerTurn ? cameraFunction ? 2 : 0 : cameraFunction ? 3 : 1 ];
+            transform.LookAt(lookAt.transform);
+        }
+    }
+
     private void UpdateCameraMove()
     {
-        transform.position = Vector3.Slerp(cameraPoint[cameraFunction ? 0 : 2], cameraPoint[cameraFunction ? 1 : 3], t);
+        transform.position = Vector3.Slerp(cameraPoint[cameraFunction ? 2 : 0], cameraPoint[cameraFunction ? 3 : 1], t);
         transform.LookAt(lookAt.transform);
     }
 
@@ -42,19 +68,20 @@ public class CameraManager : MonoBehaviour
 
     public void StartCameraMove()
     {
+        playerTurn = !playerTurn;
+        if (isCameraFunction)
+            return;
         Chessboard.Instance.isMove = false;
         StartCoroutine(CameraMove());
     }
     
     private IEnumerator CameraMove()
     {
-        float targetT = playerTurn ? 1f : 0f;
+        float targetT = playerTurn ? 0f : 1f;
         float duration = 1f;
 
         float elapsedTime = 0f; // 경과 시간
         
-        
-
         while (elapsedTime < duration)
         {
             
@@ -66,12 +93,11 @@ public class CameraManager : MonoBehaviour
             elapsedTime += Time.deltaTime;
 
             // t 값을 보간하여 부드럽게 이동
-            t = Mathf.Lerp(playerTurn ? 0f : 1f, targetT, elapsedTime / duration);
+            t = Mathf.Lerp(playerTurn ? 1f : 0f, targetT, elapsedTime / duration);
         }
 
         UpdateCameraMove();
         Chessboard.Instance.isMove = true;
-        playerTurn = !playerTurn;
         t = targetT;
     }
 }

@@ -238,7 +238,7 @@ MonoBehaviour:
   tileMaterial: {fileID: 2100000, guid: e71f58acecbd50e4eb1ee3b5859895fb, type: 2}
   tileSize: 1
   deathSize: 0.008
-  deathSpacing: 0.3
+  deathSpacing: 0.4
   dragOffset: 0
   prefabs:
   - {fileID: 5169899332509114070, guid: cb6d288a261e98f46b329b4b1abfe3d4, type: 3}
@@ -538,14 +538,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.60876137, y: -0, z: -0, w: 0.7933534}
-  m_LocalPosition: {x: 4, y: 8.5, z: 1.8}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 4, y: 8.5, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 75, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -564,7 +564,9 @@ MonoBehaviour:
   - {x: 4, y: 8.5, z: 1.8}
   - {x: 4, y: 8.5, z: 6}
   lookAt: {fileID: 1902841300}
+  cameraSetUp: {x: 4, y: 8.5, z: 4}
   t: 0
+  isCameraFunction: 1
   playerTurn: 1
 --- !u!114 &963194230
 MonoBehaviour:

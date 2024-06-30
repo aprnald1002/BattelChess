@@ -290,57 +290,81 @@ public class Chessboard : MonoBehaviour
         return false;
     }
     private bool MoveTo(ChessPiece cp, int x, int y)
+{
+    if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
     {
-        if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
-        {
-            return false;
-        }
-        
-        Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
-        
-        // Is there another piece on the target position?
-        if (chessPieces[x, y] != null)
-        {
-            ChessPiece ocp = chessPieces[x, y];
-            
-            if (cp.team == ocp.team)
-                return false;
-            
-            // If it's the enemy team
-            if (ocp.team == 0)
-            {
-                deadWhites.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(
-                    new Vector3((9 * tileSize + 1), 0, tileSize * deathSpacing * deadWhites.Count));
-                if (deadWhites.Count == whiteTeam.Count) {
-                    GameManager.Instance.GameEnd("Black");
-                }
-            }
-            else
-            {
-                deadBlacks.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(
-                    new Vector3((-tileSize - 1), 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
-                if (deadBlacks.Count == blackTeam.Count) {
-                    GameManager.Instance.GameEnd("White");
-                }
-            }
-        }
-        
-        
-        chessPieces[x, y] = cp;
-        chessPieces[previousPosition.x, previousPosition.y] = null;
-        
-        PositionSinglePiece(x, y);
-
-        isWhiteTurn = !isWhiteTurn;
-        
-        CameraManager.Instance.StartCameraMove();
-        
-        return true;
+        return false;
     }
+
+    Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
+
+    // Is there another piece on the target position?
+    if (chessPieces[x, y] != null)
+    {
+        ChessPiece ocp = chessPieces[x, y];
+
+        if (cp.team == ocp.team)
+            return false;
+
+        // If it's the enemy team
+        if (ocp.team == 0)
+        {
+            deadWhites.Add(ocp);
+            ocp.SetScale(Vector3.one * deathSize);
+            ocp.SetPosition(new Vector3((9 * tileSize + 1), 0, tileSize * deathSpacing * deadWhites.Count));
+            if (deadWhites.Count == whiteTeam.Count) {
+                GameManager.Instance.GameEnd("Black");
+            }
+        }
+        else
+        {
+            deadBlacks.Add(ocp);
+            ocp.SetScale(Vector3.one * deathSize);
+            ocp.SetPosition(new Vector3((-tileSize - 1), 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
+            if (deadBlacks.Count == blackTeam.Count) {
+                GameManager.Instance.GameEnd("White");
+            }
+        }
+    }
+
+    chessPieces[x, y] = cp;
+    chessPieces[previousPosition.x, previousPosition.y] = null;
+
+    PositionSinglePiece(x, y);
+
+    // Pawn promotion to Queen
+    if (cp.type == ChessPieceType.Pawn)
+    {
+        if ((cp.team == 0 && y == TILE_COUNT_Y - 1) || (cp.team == 1 && y == 0))
+        {
+            // Remove the pawn
+            if (cp.team == 0)
+                whiteTeam.Remove(cp);
+            else
+                blackTeam.Remove(cp);
+            
+            Destroy(cp.gameObject);
+
+            // Spawn a new Queen
+            ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, cp.team);
+            newQueen.currentX = x;
+            newQueen.currentY = y;
+            newQueen.SetPosition(GetTileCenter(x, y), true);
+            chessPieces[x, y] = newQueen;
+
+            if (newQueen.team == 0)
+                whiteTeam.Add(newQueen);
+            else
+                blackTeam.Add(newQueen);
+        }
+    }
+
+    isWhiteTurn = !isWhiteTurn;
+    CameraManager.Instance.StartCameraMove();
+
+    return true;
+}
+    
     private Vector2Int LookupTileIndex(GameObject hitInfo)
     {
         for (int x = 0; x < TILE_COUNT_X; x++)
