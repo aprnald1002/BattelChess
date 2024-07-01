@@ -33,6 +33,9 @@ public class Chessboard : MonoBehaviour
     private Vector2Int currentHover;
     private bool isWhiteTurn = true;
     public bool isMove = true;
+
+
+    public int killSet;
         
     private void Awake()
     {
@@ -84,13 +87,14 @@ public class Chessboard : MonoBehaviour
                 if (chessPieces[hitPosition.x, hitPosition.y] != null)
                 {
                     // Is it our turn;
-                    if ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn) || (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn))
+                    if ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn) ||
+                        (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn))
                     {
                         currentlyDragging = chessPieces[hitPosition.x, hitPosition.y];
-                        
+
                         // Get a list of where I can go, hightlight tiles as well
                         availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
-                        
+
                         HighlightTiles();
                     }
                 }
@@ -100,7 +104,6 @@ public class Chessboard : MonoBehaviour
             if (currentlyDragging != null && Input.GetMouseButtonUp(0))
             {
                 Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
-                
                 bool validMove = MoveTo(currentlyDragging, hitPosition.x, hitPosition.y);
                 if (!validMove)
                 {
@@ -290,80 +293,131 @@ public class Chessboard : MonoBehaviour
         return false;
     }
     private bool MoveTo(ChessPiece cp, int x, int y)
-{
-    if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
     {
-        return false;
-    }
-
-    Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
-
-    // Is there another piece on the target position?
-    if (chessPieces[x, y] != null)
-    {
-        ChessPiece ocp = chessPieces[x, y];
-
-        if (cp.team == ocp.team)
+        if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
+        {
             return false;
-
-        // If it's the enemy team
-        if (ocp.team == 0)
-        {
-            deadWhites.Add(ocp);
-            ocp.SetScale(Vector3.one * deathSize);
-            ocp.SetPosition(new Vector3((9 * tileSize + 1), 0, tileSize * deathSpacing * deadWhites.Count));
-            if (deadWhites.Count == whiteTeam.Count) {
-                GameManager.Instance.GameEnd("Black");
-            }
         }
-        else
+
+        Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
+
+        // Is there another piece on the target position?
+        if (chessPieces[x, y] != null)
         {
-            deadBlacks.Add(ocp);
-            ocp.SetScale(Vector3.one * deathSize);
-            ocp.SetPosition(new Vector3((-tileSize - 1), 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
-            if (deadBlacks.Count == blackTeam.Count) {
-                GameManager.Instance.GameEnd("White");
+            ChessPiece ocp = chessPieces[x, y];
+
+            if (cp.team == ocp.team)
+                return false;
+
+            // If it's the enemy team
+            if (ocp.team == 0)
+            {
+                deadWhites.Add(ocp);
+                if (ocp.type == ChessPieceType.Ghost)
+                {
+                    ocp.SetScale(Vector3.one * 0.5f);
+                }
+                else
+                {
+                    ocp.SetScale(Vector3.one * deathSize);
+                }
+                ocp.SetPosition(new Vector3((9 * tileSize + 1), 0, tileSize * deathSpacing * deadWhites.Count));
+                if (deadWhites.Count == whiteTeam.Count)
+                {
+                    GameManager.Instance.GameEnd("Black");
+                }
             }
-        }
-    }
-
-    chessPieces[x, y] = cp;
-    chessPieces[previousPosition.x, previousPosition.y] = null;
-
-    PositionSinglePiece(x, y);
-
-    // Pawn promotion to Queen
-    if (cp.type == ChessPieceType.Pawn)
-    {
-        if ((cp.team == 0 && y == TILE_COUNT_Y - 1) || (cp.team == 1 && y == 0))
-        {
-            // Remove the pawn
-            if (cp.team == 0)
-                whiteTeam.Remove(cp);
             else
-                blackTeam.Remove(cp);
+            {
+                deadBlacks.Add(ocp);
+                if (ocp.type == ChessPieceType.Ghost)
+                {
+                    ocp.SetScale(Vector3.one * 0.5f);
+                }
+                else
+                {
+                    ocp.SetScale(Vector3.one * deathSize);
+                }
+                ocp.SetPosition(new Vector3((-tileSize - 1), 0, -tileSize * deathSpacing * deadBlacks.Count + 8));
+                if (deadBlacks.Count == blackTeam.Count)
+                {
+                    GameManager.Instance.GameEnd("White");
+                }
+            }
+
+            if (cp.type == ChessPieceType.Pawn)
+            {
+                cp.GetComponent<Pawn>().killCount++;
+            }
+        }
+
+        chessPieces[x, y] = cp;
+        chessPieces[previousPosition.x, previousPosition.y] = null;
+
+        PositionSinglePiece(x, y);
+
+        // Pawn promotion to Queen
+        if (cp.type == ChessPieceType.Pawn)
+        {
+            if ((cp.team == 0 && y == TILE_COUNT_Y - 1) || (cp.team == 1 && y == 0))
+            {
+                // Remove the pawn
+                if (cp.team == 0)
+                    whiteTeam.Remove(cp);
+                else
+                    blackTeam.Remove(cp);
             
-            Destroy(cp.gameObject);
+                Destroy(cp.gameObject);
 
-            // Spawn a new Queen
-            ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, cp.team);
-            newQueen.currentX = x;
-            newQueen.currentY = y;
-            newQueen.SetPosition(GetTileCenter(x, y), true);
-            chessPieces[x, y] = newQueen;
+                // Spawn a new Queen
+                ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, cp.team);
+                newQueen.currentX = x;
+                newQueen.currentY = y;
+                newQueen.SetPosition(GetTileCenter(x, y), true);
+                chessPieces[x, y] = newQueen;
 
-            if (newQueen.team == 0)
-                whiteTeam.Add(newQueen);
-            else
-                blackTeam.Add(newQueen);
+                if (newQueen.team == 0)
+                    whiteTeam.Add(newQueen);
+                else
+                    blackTeam.Add(newQueen);
+            }
+            
+            if (cp.GetComponent<Pawn>().killCount >= killSet)
+            {
+                if (cp.team == 0)
+                    whiteTeam.Remove(cp);
+                else
+                    blackTeam.Remove(cp);
+            
+                Destroy(cp.gameObject);
+
+                // Spawn a new Queen
+                ChessPiece newGhost = SpawnSinglePiece(ChessPieceType.Ghost, cp.team);
+                newGhost.currentX = x;
+                newGhost.currentY = y;
+                newGhost.SetPosition(GetTileCenter(x, y), true);
+                newGhost.SetScale(Vector3.one);
+                chessPieces[x, y] = newGhost;
+
+                if (newGhost.team == 0)
+                {
+                    newGhost.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    whiteTeam.Add(newGhost);
+                }
+                else
+                {
+                    newGhost.gameObject.transform.rotation = Quaternion.Euler(0, 180, 0);
+                    blackTeam.Add(newGhost);
+                }
+            }
         }
+
+        isWhiteTurn = !isWhiteTurn;
+        CameraManager.Instance.StartCameraMove();
+
+        return true;
     }
 
-    isWhiteTurn = !isWhiteTurn;
-    CameraManager.Instance.StartCameraMove();
-
-    return true;
-}
     
     private Vector2Int LookupTileIndex(GameObject hitInfo)
     {

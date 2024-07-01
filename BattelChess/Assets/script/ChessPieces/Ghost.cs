@@ -2,18 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Special : ChessPiece
+public class Ghost : ChessPiece
 {
     public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
         List<Vector2Int> r = new List<Vector2Int>();
         
         // Kill move
-        for (int i = tileCountX; i < tileCountX; i++)
+        for (int i = 0; i < tileCountX; i++)
         {
-            for (int j = tileCountY; j < tileCountY; j++)
+            for (int j = 0; j < tileCountY; j++)
             {
-                r.Add(new Vector2Int(1, j));
+                r.Add(new Vector2Int(i, j));
             }
         }
 

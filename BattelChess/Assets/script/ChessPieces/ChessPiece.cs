@@ -11,7 +11,8 @@ public enum ChessPieceType
     Knight = 3,     
     Bishop = 4,
     Queen = 5,
-    King = 6
+    King = 6,
+    Ghost = 7
 }
 
 public class ChessPiece : MonoBehaviour
@@ -24,7 +25,7 @@ public class ChessPiece : MonoBehaviour
     private Vector3 desiredPosition;
     private Vector3 desiredScale = new Vector3(0.02f, 0.02f, 0.02f);
 
-    private void Update()
+    public void Update()
     {
         transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
